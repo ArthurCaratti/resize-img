@@ -3,67 +3,49 @@ import sys
 from PIL import Image
 
 def scale_image(input_image_path,
-                output_image_path,
-                tamanho=None,
-                width=None,
-                height=None
+                    output_image_path,
+                    tamanho=None,
+                    width=None,
+                    height=None
                 ):
+
     original_image = Image.open(input_image_path)
+
     w, h = original_image.size
-    print('	A imagem original: {wide}  x {height} '
-          .format(wide=w, height=h))
- 
-    if width and height:
-        max_size = (width, height)
-    elif width:
-        max_size = (width, h)
-    elif height:
-        max_size = (w, height)
-    else:
-        # No width or height specified
-        raise RuntimeError('Width or height required!')
- 
- 		#Thumbnail muda o tamanho
-    original_image.thumbnail(max_size, Image.ANTIALIAS)
 
-    # Pega caminho completo: PASTA + novo nome
-    name=os.path.basename(input_image_path)
-    nameNoExtension=os.path.splitext(name)[0]
-    fPathLarge=output_image_path + '\\' + tamanho + '\\' + nameNoExtension + '_' + tamanho + '.jpg'
-	# Salva
+    print('\tA imagem original: {wide}  x {height} '.format(wide = w, height = h))
+ 
+    original_image.thumbnail((width, height), Image.ANTIALIAS)
+    
+    name = os.path.basename(input_image_path)
+    nameNoExtension = os.path.splitext(name)[0]
+    fPathLarge = os.path.join(output_image_path, tamanho, nameNoExtension + '_' + tamanho + '.jpg')
+	
     original_image.save(fPathLarge)
-    print('		Salvando em: ' + fPathLarge)
-    print('		tamanho: ' + str(width) + 'x' + str(height))
+    
+    print('\t\tSalvando em: {path}'.format(path = fPathLarge))
+    print('\t\tTamanho: {w}x{h} '.format(w = width, h = height))
+
+
 if __name__ == '__main__':
-	# seta os argumentos
-	input_folder=sys.argv[1]
-	output_folder=sys.argv[2]
 
+    (input_folder, output_folder) = (sys.argv[1], sys.argv[2])    
 
-	#criar pastas	
-	if not os.path.exists(output_folder):
-		os.makedirs(output_folder)
-	if not os.path.exists(output_folder + '\\large'):
-		os.makedirs(output_folder + '\\large')
-	if not os.path.exists(output_folder + '\\' + 'small'):
-		os.makedirs(output_folder + '\\' + 'small')
-	if not os.path.exists(output_folder + '\\' + 'promo'):
-		os.makedirs(output_folder + '\\' + 'promo')
-	if not os.path.exists(output_folder + '\\' + 'thumbnail'):
-		os.makedirs(output_folder + '\\' + 'thumbnail')
+    if not os.path.exists(output_folder):
+        os.makedirs(output_folder)
 
-	# loop entre os arquivos da pasta 
-	for subdir, dirs, files in os.walk(input_folder):
-		
-		for file in files:  
-			filepath = subdir + os.sep + file
-			scale_image(input_image_path=filepath,output_image_path=output_folder,tamanho='large',width=500, height=500)	
-		for file in files:  
-			filepath = subdir + os.sep + file
-			scale_image(input_image_path=filepath,output_image_path=output_folder,tamanho='small',width=50, height=50)
-		for file in files:  
-			filepath = subdir + os.sep + file
-			scale_image(input_image_path=filepath,output_image_path=output_folder,tamanho='promo',width=300, height=300)
-		for file in files:  
-			filepath = subdir + os.sep + file
-			scale_image(input_image_path=filepath,output_image_path=output_folder,tamanho='thumbnail',width=200, height=200)	
+    pathsOutput = ['large', 'promo', 'thumbnail', 'small']
+
+    for path in pathsOutput:
+        if not os.path.exists(os.path.join(output_folder , path)):
+            os.makedirs(os.path.join(output_folder , path))
+
+    for subdir, dirs, files in os.walk(input_folder):    
+        (width, height) = (500, 500)    
+        for path in pathsOutput:            
+            for file in files:  
+                filepath = subdir + os.sep + file
+                scale_image(filepath, output_folder, path, width, height)
+            width -= 150
+            height -= 150
+
